@@ -1,5 +1,5 @@
 resource "azurerm_eventgrid_system_topic" "eventgrid_system_topic" {
-  for_each               = {for k, v in var.eventgrids : k => v}
+  for_each               = { for k, v in var.eventgrids : k => v }
   name                   = each.value.name
   resource_group_name    = each.value.rg_name
   location               = each.value.location
