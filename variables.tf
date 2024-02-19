@@ -1,8 +1,3 @@
-variable "name" {
-  type        = string
-  description = "The name of the event grid"
-}
-
 variable "identity_ids" {
   description = "Specifies a list of user managed identity ids to be assigned to the VM."
   type        = list(string)
@@ -18,6 +13,11 @@ variable "identity_type" {
 variable "location" {
   description = "The location for this resource to be put in"
   type        = string
+}
+
+variable "name" {
+  type        = string
+  description = "The name of the event grid"
 }
 
 variable "rg_name" {

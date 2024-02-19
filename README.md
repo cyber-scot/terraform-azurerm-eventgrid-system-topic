@@ -1,31 +1,28 @@
 ```hcl
 resource "azurerm_eventgrid_system_topic" "eventgrid_system_topic" {
-  for_each               = { for k, v in var.eventgrids : k => v }
-  name                   = each.value.name
-  resource_group_name    = each.value.rg_name
-  location               = each.value.location
-  tags                   = each.value.tags
-  source_arm_resource_id = each.value.source_arm_resource_id
-  topic_type             = each.value.topic_type
+  name                = var.name
+  resource_group_name = var.rg_name
+  location            = var.location
+  tags                = var.tags
+
+  source_arm_resource_id = var.source_arm_resource_id
+  topic_type             = var.topic_type
 
   dynamic "identity" {
-    for_each = each.value.identity_type == "SystemAssigned" ? [each.value.identity_type] : []
+    for_each = length(var.identity_ids) == 0 && var.identity_type == "SystemAssigned" ? [var.identity_type] : []
     content {
-      type = each.value.identity_type
+      type = var.identity_type
     }
   }
 
   dynamic "identity" {
-    for_each = each.value.identity_type == "UserAssigned" ? [each.value.identity_type] : []
+    for_each = length(var.identity_ids) > 0 || var.identity_type == "UserAssigned" ? [var.identity_type] : []
     content {
-      type         = each.value.identity_type
-      identity_ids = length(try(each.value.identity_ids, [])) > 0 ? each.value.identity_ids : []
+      type         = var.identity_type
+      identity_ids = length(var.identity_ids) > 0 ? var.identity_ids : []
     }
   }
 }
-
-
-
 ```
 ## Requirements
 
@@ -51,16 +48,22 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_eventgrids"></a> [eventgrids](#input\_eventgrids) | The event grids blocks | <pre>list(object({<br>    name                      = string<br>    location                  = optional(string, "uksouth")<br>    rg_name                   = string<br>    create_event_subscription = optional(bool, false)<br>    tags                      = map(string)<br>    source_arm_resource_id    = string<br>    topic_type                = string<br>    identity_type             = optional(string)<br>    identity_ids              = optional(list(string))<br>  }))</pre> | `null` | no |
+| <a name="input_identity_ids"></a> [identity\_ids](#input\_identity\_ids) | Specifies a list of user managed identity ids to be assigned to the VM. | `list(string)` | `[]` | no |
+| <a name="input_identity_type"></a> [identity\_type](#input\_identity\_type) | The Managed Service Identity Type of this Virtual Machine. | `string` | `""` | no |
+| <a name="input_location"></a> [location](#input\_location) | The location for this resource to be put in | `string` | n/a | yes |
+| <a name="input_name"></a> [name](#input\_name) | The name of the event grid | `string` | n/a | yes |
+| <a name="input_rg_name"></a> [rg\_name](#input\_rg\_name) | The name of the resource group, this module does not create a resource group, it is expecting the value of a resource group already exists | `string` | n/a | yes |
+| <a name="input_source_arm_resource_id"></a> [source\_arm\_resource\_id](#input\_source\_arm\_resource\_id) | The name of the Resource Group where the Event Grid System Topic should exist, e.g. the resource ID its supposed to check | `string` | n/a | yes |
+| <a name="input_tags"></a> [tags](#input\_tags) | A map of the tags to use on the resources that are deployed with this module. | `map(string)` | n/a | yes |
+| <a name="input_topic_type"></a> [topic\_type](#input\_topic\_type) | The topic type which the event grid is looking at events for | `string` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_eventgrid_identities"></a> [eventgrid\_identities](#output\_eventgrid\_identities) | Map of the Event Grid identity blocks |
-| <a name="output_eventgrid_ids"></a> [eventgrid\_ids](#output\_eventgrid\_ids) | Map of Event Grid IDs |
-| <a name="output_eventgrid_locations"></a> [eventgrid\_locations](#output\_eventgrid\_locations) | Map of locations for each Event Grid system topic |
-| <a name="output_eventgrid_names"></a> [eventgrid\_names](#output\_eventgrid\_names) | Map of Event Grid names |
-| <a name="output_eventgrid_resource_group_names"></a> [eventgrid\_resource\_group\_names](#output\_eventgrid\_resource\_group\_names) | Map of resource group names for each Event Grid system topic |
-| <a name="output_eventgrid_tags"></a> [eventgrid\_tags](#output\_eventgrid\_tags) | Map of tags for each Event Grid system topic |
-| <a name="output_source_arm_resource_ids"></a> [source\_arm\_resource\_ids](#output\_source\_arm\_resource\_ids) | Map of the Event Grid source ARM resource IDs |
+| <a name="output_event_grid_principal_id"></a> [event\_grid\_principal\_id](#output\_event\_grid\_principal\_id) | Client ID of system assigned managed identity if created |
+| <a name="output_eventgrid_id"></a> [eventgrid\_id](#output\_eventgrid\_id) | Event Grid ID |
+| <a name="output_eventgrid_identity"></a> [eventgrid\_identity](#output\_eventgrid\_identity) | The Event grid identity block |
+| <a name="output_eventgrid_name"></a> [eventgrid\_name](#output\_eventgrid\_name) | Event Grid name |
+| <a name="output_metric_arm_resource_id"></a> [metric\_arm\_resource\_id](#output\_metric\_arm\_resource\_id) | The Event grid metric arm resource id |
+| <a name="output_source_arm_metric_id"></a> [source\_arm\_metric\_id](#output\_source\_arm\_metric\_id) | The Event grid source arm metric id |
